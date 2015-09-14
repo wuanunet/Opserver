@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
-using Dapper;
-using Newtonsoft.Json;
+using System.Threading.Tasks;
+using Jil;
 
 namespace StackExchange.Opserver.Data.SQL
 {
@@ -17,10 +17,9 @@ namespace StackExchange.Opserver.Data.SQL
                 return _availabilityGroups ?? (_availabilityGroups = new Cache<List<AvailabilityGroupInfo>>
                     {
                         CacheForSeconds = Cluster.RefreshInterval,
-                        UpdateCache = UpdateFromSql("AvailabilityGroups", conn =>
+                        UpdateCache = UpdateFromSql("AvailabilityGroups", async conn =>
                             {
-                                var result =
-                                    conn.Query<AvailabilityGroupInfo>(GetFetchSQL<AvailabilityGroupInfo>()).ToList();
+                                var result = await conn.QueryAsync<AvailabilityGroupInfo>(GetFetchSQL<AvailabilityGroupInfo>());
                                 result.ForEach(r => { r.Node = this; });
                                 return result;
                             })
@@ -36,7 +35,7 @@ namespace StackExchange.Opserver.Data.SQL
                 return _availabilityGroupReplicas ?? (_availabilityGroupReplicas = new Cache<List<AvailabilityGroupReplicaInfo>>
                 {
                     CacheForSeconds = Cluster.RefreshInterval,
-                    UpdateCache = UpdateFromSql("AvailabilityGroups", conn => AvailabilityGroupReplicaInfo.PopulateFromConnection(conn, this))
+                    UpdateCache = UpdateFromSql("AvailabilityGroups", conn => AvailabilityGroupReplicaInfo.PopulateFromConnectionAsync(conn, this))
                 });
             }
         }
@@ -50,7 +49,7 @@ namespace StackExchange.Opserver.Data.SQL
         /// </summary>
         public class AvailabilityGroupInfo : ISQLVersionedObject, IMonitedService
         {
-            public Version MinVersion { get { return SQLServerVersions.SQL2012.RTM; } }
+            public Version MinVersion => SQLServerVersions.SQL2012.RTM;
 
             /* Availability Group Core */
             public string Name { get; internal set; }
@@ -76,45 +75,40 @@ namespace StackExchange.Opserver.Data.SQL
                     {
                         _hasDatabases = LocalReplica != null && RemoteReplicas != null
                                         && (LocalReplica.Databases.Count > 0
-                                            || RemoteReplicas.Sum(r => r.Databases != null ? r.Databases.Count : 0) > 0);
+                                            || RemoteReplicas.Sum(r => r.Databases?.Count ?? 0) > 0);
                     }
                     return _hasDatabases.Value;
                 }
             }
 
-            [JsonIgnore]
+            [JilDirective(Ignore = true)]
             public SQLNode Node { get; internal set; }
 
-            [JsonIgnore]
+            [JilDirective(Ignore = true)]
             public List<AvailabilityGroupReplicaInfo> Replicas
             {
                 get { return Node.AvailabilityGroupReplicas.SafeData(true).Where(gr => GroupId == gr.GroupId).ToList(); }
             }
-            [JsonIgnore]
+            [JilDirective(Ignore = true)]
             public List<AvailabilityGroupListener> Listeners
             {
                 get { return Node.AvailabilityGroupListeners.SafeData(true).Where(gr => GroupId == gr.GroupId).ToList(); }
             }
-
-            [JsonIgnore]
+            
+            [JilDirective(Ignore = true)]
             public AvailabilityGroupReplicaInfo LocalReplica
             {
                 get { return Replicas.FirstOrDefault(r => r.IsLocal.GetValueOrDefault()); }
             }
-            [JsonIgnore]
+            [JilDirective(Ignore = true)]
             public IEnumerable<AvailabilityGroupReplicaInfo> RemoteReplicas
             {
                 get { return Replicas.Where(r => !r.IsLocal.GetValueOrDefault()); }
             }
 
-            public MonitorStatus MonitorStatus
-            {
-                get { return Replicas.GetWorstStatus(); }
-            }
-            public string MonitorStatusReason
-            {
-                get { return Replicas.GetReasonSummary(); }
-            }
+            public MonitorStatus MonitorStatus => Replicas.GetWorstStatus();
+
+            public string MonitorStatusReason => Replicas.GetReasonSummary();
 
             internal const string FetchSQL = @"
 Select ag.name Name,
@@ -148,7 +142,7 @@ Select ag.name Name,
         /// </summary>
         public class AvailabilityGroupReplicaInfo : ISQLVersionedObject, IMonitorStatus
         {
-            public Version MinVersion { get { return SQLServerVersions.SQL2012.RTM; } }
+            public Version MinVersion => SQLServerVersions.SQL2012.RTM;
 
             public string AvailabilityGroupName { get; internal set; }
             public Guid? GroupId { get; internal set; }
@@ -190,7 +184,7 @@ Select ag.name Name,
             public decimal BytesReceivedPerSecond { get; internal set; }
             public long BytesReceivedTotal { get; internal set; }
 
-            [JsonIgnore]
+            [JilDirective(Ignore = true)]
             public SQLNode ReplicaNode { get; internal set; }
             public List<DatabaseReplicaState> Databases { get; internal set; }
 
@@ -300,16 +294,16 @@ Drop Table #dbs;
                 return FetchSQL;
             }
 
-            public static List<AvailabilityGroupReplicaInfo> PopulateFromConnection(DbConnection conn, SQLNode node)
+            public static async Task<List<AvailabilityGroupReplicaInfo>> PopulateFromConnectionAsync(DbConnection conn, SQLNode node)
             {
                 List<AvailabilityGroupReplicaInfo> groups;
                 List<DatabaseReplicaState> databases;
 
                 var sql = node.GetFetchSQL<AvailabilityGroupReplicaInfo>() + "\n\n" + node.GetFetchSQL<DatabaseReplicaState>();
-                using (var multi = conn.QueryMultiple(sql))
+                using (var multi = await conn.QueryMultipleAsync(sql))
                 {
-                    groups = multi.Read<AvailabilityGroupReplicaInfo>().ToList();
-                    databases = multi.Read<DatabaseReplicaState>().ToList();
+                    groups = (await multi.ReadAsync<AvailabilityGroupReplicaInfo>()).AsList();
+                    databases = (await multi.ReadAsync<DatabaseReplicaState>()).AsList();
                 }
 
                 Func<string, string, PerfCounterRecord> getCounter = (cn, n) => node.GetPerfCounter("Availability Replica", cn, n);
@@ -340,7 +334,7 @@ Drop Table #dbs;
         /// </summary>
         public class DatabaseReplicaState : ISQLVersionedObject, IMonitorStatus
         {
-            public Version MinVersion { get { return SQLServerVersions.SQL2012.RTM; } }
+            public Version MinVersion => SQLServerVersions.SQL2012.RTM;
 
             public int DatabaseId { get; internal set; }
             public Guid GroupId { get; internal set; }
@@ -389,10 +383,7 @@ Drop Table #dbs;
             /// Returns the *real* log send rate, if there's nothing to send SQL still reports the last high rate, 
             /// when it's actually sending noting.  This will return null as it should in that case.
             /// </summary>
-            public long? LogSendRateReal
-            {
-                get { return LogSendQueueSize > 0 ? LogSendRate : null; }
-            }
+            public long? LogSendRateReal => LogSendQueueSize > 0 ? LogSendRate : null;
 
             public double? LogPercentUsed
             {
@@ -433,20 +424,11 @@ Drop Table #dbs;
                 }
             }
 
-            public string DatabaseStateDescription
-            {
-                get
-                {
-                    return DatabaseState.HasValue
-                               ? DatabaseState.GetDescription() + (IsSuspended.GetValueOrDefault() ? " (Suspended)" : "")
-                               : string.Empty;
-                }
-            }
+            public string DatabaseStateDescription => DatabaseState.HasValue
+                ? DatabaseState.GetDescription() + (IsSuspended.GetValueOrDefault() ? " (Suspended)" : "")
+                : string.Empty;
 
-            public string SuspendReasonDescription
-            {
-                get { return SuspendReason.HasValue ? "Suspended by " + SuspendReason.GetDescription() : string.Empty; }
-            }
+            public string SuspendReasonDescription => SuspendReason.HasValue ? "Suspended by " + SuspendReason.GetDescription() : string.Empty;
 
             internal const string FetchSQL = @"
 Select dbrs.database_id DatabaseId,
