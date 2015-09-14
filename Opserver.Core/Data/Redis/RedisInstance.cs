@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using StackExchange.Opserver.Helpers;
 using StackExchange.Opserver.Data.Dashboard;
 using StackExchange.Redis;
@@ -11,24 +12,24 @@ namespace StackExchange.Opserver.Data.Redis
     public partial class RedisInstance : PollNode, IEquatable<RedisInstance>, ISearchableNode
     {
         // TODO: Per-Instance searchability, sub-nodes
-        string ISearchableNode.DisplayName { get { return Host + ":" + Port + " - " + Name; } }
-        string ISearchableNode.Name { get { return Host + ":" + Port; } }
-        string ISearchableNode.CategoryName { get { return "Redis"; } }
+        string ISearchableNode.DisplayName => Host + ":" + Port + " - " + Name;
+        string ISearchableNode.Name => Host + ":" + Port;
+        string ISearchableNode.CategoryName => "Redis";
 
         public RedisConnectionInfo ConnectionInfo { get; internal set; }
-        public string Name { get { return ConnectionInfo.Name; } }
-        public string Host { get { return ConnectionInfo.Host; } }
+        public string Name => ConnectionInfo.Name;
+        public string Host => ConnectionInfo.Host;
 
-        public Version Version { get { return Info.HasData() ? Info.Data.Server.Version : null; } }
+        public Version Version => Info.HasData() ? Info.Data.Server.Version : null;
 
-        public string Password { get { return ConnectionInfo.Password; } }
-        public int Port { get { return ConnectionInfo.Port; } }
-        
+        public string Password => ConnectionInfo.Password;
+        public int Port => ConnectionInfo.Port;
+
         // Redis is spanish for WE LOVE DANGER, I think.
-        protected override TimeSpan BackoffDuration { get { return TimeSpan.FromSeconds(5); } }
+        protected override TimeSpan BackoffDuration => TimeSpan.FromSeconds(5);
 
-        public override string NodeType { get { return "Redis"; } }
-        public override int MinSecondsBetweenPolls { get { return 5; } }
+        public override string NodeType => "Redis";
+        public override int MinSecondsBetweenPolls => 5;
 
         private ConnectionMultiplexer _connection;
         public ConnectionMultiplexer Connection
@@ -118,7 +119,7 @@ namespace StackExchange.Opserver.Data.Redis
             return ConnectionMultiplexer.Connect(config);
         }
 
-        public Action<Cache<T>> GetFromRedis<T>(string opName, Func<ConnectionMultiplexer, T> getFromConnection) where T : class
+        public Action<Cache<T>> GetFromRedisAsync<T>(string opName, Func<ConnectionMultiplexer, Task<T>> getFromConnection) where T : class
         {
             return UpdateCacheItem(description: "Redis Fetch: " + Name + ":" + opName,
                                    getData: () => getFromConnection(Connection),

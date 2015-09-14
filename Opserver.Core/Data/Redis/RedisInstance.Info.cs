@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Policy;
 using System.Text;
 using StackExchange.Profiling;
 using StackExchange.Redis;
@@ -33,34 +32,39 @@ namespace StackExchange.Opserver.Data.Redis
             get
             {
                 return _info ?? (_info = new Cache<RedisInfo>
+                {
+                    CacheForSeconds = 5,
+                    UpdateCache = GetFromRedisAsync("INFO", async rc =>
                     {
-                        CacheForSeconds = 5,
-                        UpdateCache = GetFromRedis("INFO", rc =>
-                        {
-                            var server = rc.GetSingleServer();
-                            string infoStr;
+                        var server = rc.GetSingleServer();
+                        string infoStr;
                             //TODO: Remove when StackExchange.Redis gets profiling
                             using (MiniProfiler.Current.CustomTiming("redis", "INFO"))
-                            {
-                                infoStr = server.InfoRaw();
-                            }
-                            ConnectionInfo.Features = server.Features;
-                            var ri = RedisInfo.FromInfoString(infoStr);
-                            if (ri != null) Replication = ri.Replication;
-                            return ri;
-                        })
-                    });
+                        {
+                            infoStr = await server.InfoRawAsync();
+                        }
+                        ConnectionInfo.Features = server.Features;
+                        var ri = RedisInfo.FromInfoString(infoStr);
+                        if (ri != null) Replication = ri.Replication;
+                        return ri;
+                    })
+                });
             }
         }
 
-        public RedisInfo.RedisInstanceRole Role { get { return Replication != null ? Replication.RedisInstanceRole : RedisInfo.RedisInstanceRole.Unknown; } }
-
-        public bool IsMaster { get { return Role == RedisInfo.RedisInstanceRole.Master; } }
-        public bool IsSlave { get { return Role == RedisInfo.RedisInstanceRole.Slave; } }
-        public bool IsSlaving
+        public RedisInfo.RedisInstanceRole Role
         {
-            get { return IsSlave && (Replication.MasterLinkStatus != "up" || Info.SafeData(true).Replication.MastSyncLeftBytes > 0); }
+            get
+            {
+                if (AllInstances.Any(r => r.SlaveInstances.Any(s => s == this)))
+                    return RedisInfo.RedisInstanceRole.Slave;
+                return Replication?.RedisInstanceRole ?? RedisInfo.RedisInstanceRole.Unknown;
+            }
         }
+
+        public bool IsMaster => Role == RedisInfo.RedisInstanceRole.Master;
+        public bool IsSlave => Role == RedisInfo.RedisInstanceRole.Slave;
+        public bool IsSlaving => IsSlave && (Replication.MasterLinkStatus != "up" || Info.SafeData(true).Replication.MastSyncLeftBytes > 0);
 
         public RedisInstance TopMaster
         {
@@ -76,32 +80,26 @@ namespace StackExchange.Opserver.Data.Redis
         {
             get
             {
-                if (IsSlave && Replication.MasterHost.HasValue())
+                if (Replication.MasterHost.HasValue())
                     return GetInstance(Replication.MasterHost, Replication.MasterPort);
                 return null;
             }
         }
-        public int SlaveCount
-        {
-            get { return Replication != null ? Replication.ConnectedSlaves : 0; }
-        }
+        public int SlaveCount => Replication?.ConnectedSlaves ?? 0;
+
         public int TotalSlaveCount
         {
-            get { return SlaveCount + (SlaveCount > 0 && SlaveInstances != null ? SlaveInstances.Sum(s => s != null ? s.TotalSlaveCount : 0) : 0); }
+            get { return SlaveCount + (SlaveCount > 0 && SlaveInstances != null ? SlaveInstances.Sum(s => s?.TotalSlaveCount ?? 0) : 0); }
         }
-        public List<RedisInfo.RedisSlaveInfo> SlaveConnections
-        {
-            get { return Replication != null ? Replication.SlaveConnections : null; }
-        }
+        public List<RedisInfo.RedisSlaveInfo> SlaveConnections => Replication?.SlaveConnections;
+
         public List<RedisInstance> SlaveInstances
         {
             get
             {
                 if (Info.LastPollStatus == FetchStatus.Success)
                 {
-                    return (Replication != null
-                        ? Replication.SlaveConnections.Select(s => s.GetServer()).ToList()
-                        : new List<RedisInstance>())
+                    return (Replication?.SlaveConnections.Select(s => s.GetServer()).ToList() ?? new List<RedisInstance>())
                         .Union(AllInstances.Where(i => i.Master == this)).ToList();
                 }
                 // If we can't poll this server, ONLY trust the other nodes we can poll
@@ -112,7 +110,7 @@ namespace StackExchange.Opserver.Data.Redis
         public List<RedisInstance> GetAllSlavesInChain()
         {
             var slaves = SlaveInstances;
-            return slaves.Union(slaves.SelectMany(i => i != null ? i.GetAllSlavesInChain() : null)).Distinct().ToList();
+            return slaves.Union(slaves.SelectMany(i => i?.GetAllSlavesInChain())).Distinct().ToList();
         }
 
         public class RedisInfoSection

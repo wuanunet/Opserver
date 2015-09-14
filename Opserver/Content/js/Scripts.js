@@ -57,10 +57,12 @@ window.Status = (function () {
         }
 
         if (name && registeredRefreshes[name]) {
+            console.log('Refresh paused for: ' + name);
             pauseSingleRefresh(registeredRefreshes[name]);
             return;
         }
 
+        console.log('Refresh paused');
         for (var key in registeredRefreshes) {
             if (registeredRefreshes.hasOwnProperty(key)) {
                 pauseSingleRefresh(registeredRefreshes[key]);
@@ -79,10 +81,12 @@ window.Status = (function () {
         }
 
         if (name && registeredRefreshes[name]) {
+            console.log('Refresh resumed for: ' + name);
             resumeSingleRefresh(registeredRefreshes[name]);
             return;
         }
 
+        console.log('Refresh resumed');
         for (var key in registeredRefreshes) {
             if (registeredRefreshes.hasOwnProperty(key)) {
                 resumeSingleRefresh(registeredRefreshes[key]);
@@ -296,9 +300,17 @@ window.Status = (function () {
             e.preventDefault();
         }).on('click', '.issues-list, .action-popup', function (e) {
             e.stopPropagation();
-        }).on('click', function () {
-            $('.issues-list').removeClass('active');
-            $('.action-popup').remove();
+        }).on({
+            'click': function () {
+                $('.issues-list').removeClass('active');
+                $('.action-popup').remove();
+            },
+            'show': function () {
+                resumeRefresh();
+            },
+            'hide': function () {
+                pauseRefresh();
+            }
         });
         prepTableSorter();
     }
@@ -812,7 +824,7 @@ Status.Exceptions = (function () {
             var count = apps[log].ExceptionCount;
             $('.exception-title').text(count.toLocaleString() + ' ' + log + ' Exception' + (count != 1 ? 's' : ''));
         } else {
-            $('.exception-title').text(total + ' Exception' + (total != 1 ? 's' : ''));
+            $('.exception-title').text(total.toLocaleString() + ' Exception' + (total != 1 ? 's' : ''));
         }
         $('.tabs-links .count.exception-count').text(total);
     }
@@ -840,7 +852,7 @@ Status.Exceptions = (function () {
                         newDB = $('.exceptions-dashboard', newPage),
                         newCount = newDB.data('total-count'),
                         newTitle = newDB.data('title');
-                    $('.exception-count').text(newCount);
+                    $('.exception-count').text((+newCount).toLocaleString());
                     $('.exception-title').text(newTitle);
                     if (newTitle) document.title = Status.options.SiteName ? newTitle + ' - ' + Status.options.SiteName : newTitle;
                     $('.top-server-list').replaceWith(newHeader);

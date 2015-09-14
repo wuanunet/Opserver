@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using StackExchange.Profiling;
 using StackExchange.Exceptional;
 
@@ -64,27 +65,27 @@ namespace StackExchange.Opserver.Data.Exceptions
                                         .Select(a => new Application {Name = a}).ToList();
         }
 
-        public static Error GetError(string appName, Guid guid)
+        public static Task<Error> GetError(string appName, Guid guid)
         {
-            return GetStores(appName).Select(s => s.GetError(guid)).FirstOrDefault(e => e != null);
+            return GetStores(appName).Select(async s => await s.GetError(guid)).FirstOrDefault(e => e != null);
         }
 
-        public static T Action<T>(string appName, Func<ExceptionStore, T> action)
+        public static async Task<T> Action<T>(string appName, Func<ExceptionStore, Task<T>> action)
         {
             var result = default(T);
-            GetApps(appName).ForEach(a =>
+            foreach(var a in GetApps(appName))
+            {
+                var aResult = await action(a.Store);
+                if (typeof(T) == typeof(bool) && Convert.ToBoolean(aResult))
                 {
-                    var aResult = action(a.Store);
-                    if (typeof(T) == typeof(bool) && Convert.ToBoolean(aResult))
-                    {
-                        result = aResult;
-                    }
-                    if (a.Store != null)
-                    {
-                        a.Store.Applications.Purge();
-                        a.Store.ErrorSummary.Purge();
-                    }
-                });
+                    result = aResult;
+                }
+                if (a.Store != null)
+                {
+                    a.Store.Applications.Purge();
+                    a.Store.ErrorSummary.Purge();
+                }
+            }
             return result;
         }
 
@@ -153,18 +154,20 @@ namespace StackExchange.Opserver.Data.Exceptions
             }
         }
 
-        public static List<Error> GetSimilarErrors(Error error, bool byTime = false, int max = 200, ExceptionSorts sort = ExceptionSorts.TimeDesc)
+        public static async Task<List<Error>> GetSimilarErrorsAsync(Error error, bool byTime = false, int max = 200, ExceptionSorts sort = ExceptionSorts.TimeDesc)
         {
             if (error == null) return new List<Error>();
-            var similarErrors = GetStores(error.ApplicationName).SelectMany(s => byTime ? s.GetSimilarErrorsInTime(error, max) : s.GetSimilarErrors(error, max));
+            var errorFetches = GetStores(error.ApplicationName).Select(s => byTime ? s.GetSimilarErrorsInTime(error, max) : s.GetSimilarErrors(error, max));
+            var similarErrors = (await Task.WhenAll(errorFetches)).SelectMany(e => e);
             return GetSorted(similarErrors, sort).ToList();
         }
 
-        public static List<Error> FindErrors(string searchText, string appName = null, int max = 200, bool includeDeleted = false, ExceptionSorts sort = ExceptionSorts.TimeDesc)
+        public static async Task<List<Error>> FindErrorsAsync(string searchText, string appName = null, int max = 200, bool includeDeleted = false, ExceptionSorts sort = ExceptionSorts.TimeDesc)
         {
             if (searchText.IsNullOrEmpty()) return new List<Error>();
             var stores = appName.HasValue() ? GetStores(appName) : Stores;
-            var results = stores.SelectMany(s => s.FindErrors(searchText, appName, max, includeDeleted));
+            var errorFetches = stores.Select(s => s.FindErrors(searchText, appName, max, includeDeleted));
+            var results = (await Task.WhenAll(errorFetches)).SelectMany(e => e);
             return GetSorted(results, sort).ToList();
         }
         

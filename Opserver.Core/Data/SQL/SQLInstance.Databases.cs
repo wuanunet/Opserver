@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Dapper;
 
 namespace StackExchange.Opserver.Data.SQL
 {
@@ -26,7 +24,7 @@ namespace StackExchange.Opserver.Data.SQL
                     UpdateCache = UpdateFromSql("Table Info for " + databaseName, conn =>
                         {
                             var sql = $"Use [{databaseName}]; {GetFetchSQL<SQLDatabaseTableInfo>()}";
-                            return conn.Query<SQLDatabaseTableInfo>(sql).ToList();
+                            return conn.QueryAsync<SQLDatabaseTableInfo>(sql);
                         })
                 };
         }
@@ -41,16 +39,13 @@ namespace StackExchange.Opserver.Data.SQL
                 UpdateCache = UpdateFromSql("Column Info for " + databaseName, conn =>
                 {
                     var sql = $"Use [{databaseName}]; {GetFetchSQL<SQLDatabaseColumnInfo>()}";
-                    return conn.Query<SQLDatabaseColumnInfo>(sql).ToList();
+                    return conn.QueryAsync<SQLDatabaseColumnInfo>(sql);
                 })
             };
         }
 
         private Cache<List<SQLDatabaseVLFInfo>> _databaseVLFs;
-        public Cache<List<SQLDatabaseVLFInfo>> DatabaseVLFs
-        {
-            get { return _databaseVLFs ?? (_databaseVLFs = SqlCacheList<SQLDatabaseVLFInfo>(10 * 60, 60, affectsStatus: false)); }
-        }
+        public Cache<List<SQLDatabaseVLFInfo>> DatabaseVLFs => _databaseVLFs ?? (_databaseVLFs = SqlCacheList<SQLDatabaseVLFInfo>(10 * 60, 60, affectsStatus: false));
 
         public static List<string> SystemDatabaseNames = new List<string>
             {
@@ -62,7 +57,7 @@ namespace StackExchange.Opserver.Data.SQL
 
         public class SQLDatabaseInfo : ISQLVersionedObject, IMonitorStatus
         {
-            public Version MinVersion { get { return SQLServerVersions.SQL2005.RTM; } }
+            public Version MinVersion => SQLServerVersions.SQL2005.RTM;
 
             public string OverallStateDescription
             {
@@ -383,7 +378,7 @@ Select vs.volume_id VolumeId,
 
         public class SQLDatabaseTableInfo : ISQLVersionedObject
         {
-            public Version MinVersion { get { return SQLServerVersions.SQL2005.RTM; } }
+            public Version MinVersion => SQLServerVersions.SQL2005.RTM;
 
             public int Id { get; internal set; }
             public string SchemaName { get; internal set; }
@@ -395,7 +390,7 @@ Select vs.volume_id VolumeId,
             public long IndexTotalSpaceKB { get; internal set; }
             public long UsedSpaceKB { get; internal set; }
             public long TotalSpaceKB { get; internal set; }
-            public long FreeSpaceKB { get { return TotalSpaceKB - UsedSpaceKB; } }
+            public long FreeSpaceKB => TotalSpaceKB - UsedSpaceKB;
             public TableTypes TableType { get; internal set; }
 
             internal const string FetchSQL = @"
@@ -440,9 +435,9 @@ Group By t.object_id, t.Name, t.create_date, s.name";
 
         public class SQLDatabaseColumnInfo : ISQLVersionedObject
         {
-            public Version MinVersion { get { return SQLServerVersions.SQL2005.RTM; } }
+            public Version MinVersion => SQLServerVersions.SQL2005.RTM;
 
-            public string Id { get { return Schema + "." + TableName + "." + ColumnName; } }
+            public string Id => Schema + "." + TableName + "." + ColumnName;
 
             public string Schema { get; internal set; }
             public string TableName { get; internal set; }
@@ -477,11 +472,11 @@ Group By t.object_id, t.Name, t.create_date, s.name";
                         case "varchar":
                         case "nvarchar":
                         case "varbinary":
-                            props.Add(string.Format("{0}({1})", DataType, MaxLength == -1 ? "max" : MaxLength.ToString()));
+                            props.Add($"{DataType}({(MaxLength == -1 ? "max" : MaxLength.ToString())})");
                             break;
                         case "decimal":
                         case "numeric":
-                            props.Add(string.Format("{0}({1},{2})", DataType, Scale, Precision));
+                            props.Add($"{DataType}({Scale},{Precision})");
                             break;
                         default:
                             props.Add(DataType);
@@ -583,7 +578,7 @@ Order By 1, 2, 3";
 
         public class SQLDatabaseVLFInfo : ISQLVersionedObject
         {
-            public Version MinVersion { get { return SQLServerVersions.SQL2005.RTM; } }
+            public Version MinVersion => SQLServerVersions.SQL2005.RTM;
 
             public int DatabaseId { get; internal set; }
             public string DatabaseName { get; internal set; }
