@@ -247,7 +247,15 @@
     </Content>
     <Content Include="Config\JiraSettings.json.example" />
     <None Include="compilerconfig.json" />
+    <Content Include="Config\DashboardSettings.json" />
+    <Content Include="Config\ElasticSettings.json" />
+    <Content Include="Config\ExceptionsSettings.json" />
+    <Content Include="Config\HAProxySettings.json" />
     <None Include="Config\PagerDutySettings.json.example" />
+    <Content Include="Config\SecuritySettings.config" />
+    <Content Include="Config\PollingSettings.json" />
+    <Content Include="Config\RedisSettings.json" />
+    <Content Include="Config\SQLSettings.json" />
     <None Include="Content\_Styles.HeadsUp.less">
       <DependentUpon>Styles.less</DependentUpon>
     </None>

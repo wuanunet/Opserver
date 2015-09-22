@@ -1,4 +1,10 @@
-﻿using System;
+﻿using StackExchange.Exceptional;
+using StackExchange.Opserver.Data;
+using StackExchange.Opserver.Helpers;
+using StackExchange.Opserver.Monitoring;
+using StackExchange.Profiling;
+using StackExchange.Profiling.Mvc;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,12 +13,6 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
-using StackExchange.Exceptional;
-using StackExchange.Opserver.Data;
-using StackExchange.Opserver.Monitoring;
-using StackExchange.Profiling;
-using StackExchange.Opserver.Helpers;
-using StackExchange.Profiling.Mvc;
 
 namespace StackExchange.Opserver
 {
@@ -21,8 +21,8 @@ namespace StackExchange.Opserver
         /// <summary>
         /// The time this application was spun up.
         /// </summary>
-        public static readonly DateTime StartDate = DateTime.UtcNow;
-        
+        public static readonly DateTime StartDate = DateTime.UtcNow.AddHours(8);
+
         public static void RegisterRoutes(RouteCollection routes)
         {
             routes.IgnoreRoute("{*allaspx}", new { allaspx = @".*\.aspx(/.*)?" });
@@ -122,7 +122,7 @@ namespace StackExchange.Opserver
                 data.Add("User", Current.User.AccountName);
                 data.Add("Roles", Current.User.RawRoles.ToString());
             }
-            
+
             while (ex != null)
             {
                 foreach (DictionaryEntry de in ex.Data)
@@ -143,10 +143,13 @@ namespace StackExchange.Opserver
             {
                 case SiteSettings.ProfilingModes.Enabled:
                     return true;
+
                 case SiteSettings.ProfilingModes.LocalOnly:
                     return HttpContext.Current.Request.IsLocal;
+
                 case SiteSettings.ProfilingModes.AdminOnly:
                     return Current.User != null && Current.User.IsGlobalAdmin;
+
                 default:
                     return false;
             }
