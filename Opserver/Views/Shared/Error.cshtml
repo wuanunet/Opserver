@@ -5,7 +5,7 @@
 <!-- Actual error:
 @{
     var o = HttpContext.Current.ApplicationInstance.Application["LastError"] as Exception;
-    if (o != null) { 
+    if (o != null) {
         @o.GetBaseException().Message
     }
 }

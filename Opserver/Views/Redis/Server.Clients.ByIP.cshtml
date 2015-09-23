@@ -13,7 +13,11 @@
         @foreach (var ip in ips.OrderBy(ipg => ipg.Key))
         {
             var name = info.GetServerName(ip.Key);
-            <div class="info-line"><span class="label">@ip.Key@(name.HasValue() ? " (" + name + ")" : "")</span> <span class="value">@ip.Count().ToComma()</span> <span class="value add-info conns">@ip.Count().Pluralize("connection", includeNumber: false)</span></div>
+            <div class="info-line">
+                <span class="label">@ip.Key@(name.HasValue() ? " (" + name + ")" : "")</span>
+                <span class="value">@ip.Count().ToComma()</span>
+                <span class="value add-info conns">@ip.Count().Pluralize("connection", includeNumber: false)</span>
+            </div>
         }
     </div>
-}
+            }

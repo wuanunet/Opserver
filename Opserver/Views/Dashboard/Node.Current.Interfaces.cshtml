@@ -3,17 +3,19 @@
 @model Node
 @helper Graph(Interface i, string type)
 {
-    if (i.IsUnwatched)
-    {
+if (i.IsUnwatched)
+{
         <div class="spark-no-data">No Data Available</div>
-        return;
-    }
-    <img class="dashboard-spark" src="/graph/interface/@type.ToLower()/spark?id=@i.Id"  width="@Current.ViewSettings.SparklineChartWidth" height="@Current.ViewSettings.SparklineChartHeight" alt="" data-nid="@i.Id" data-name="@i.PrettyName" />
+    return;
+}
+    <img class="dashboard-spark" src="/graph/interface/@type.ToLower()/spark?id=@i.Id" width="@Current.ViewSettings.SparklineChartWidth" height="@Current.ViewSettings.SparklineChartHeight" alt="" data-nid="@i.Id" data-name="@i.PrettyName" />
 }
 <table class="node-dashboard main-dashboard interface-dashboard striped-dashboard">
     <thead>
         <tr class="category-row">
-            <th colspan="8"><div>@Model.Interfaces.Count().Pluralize("Interface") on @Model.PrettyName</div></th>
+            <th colspan="8">
+                <div>@Model.Interfaces.Count().Pluralize("Interface") on @Model.PrettyName</div>
+            </th>
         </tr>
         <tr class="sort-row">
             <th></th>

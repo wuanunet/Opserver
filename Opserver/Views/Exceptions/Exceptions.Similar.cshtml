@@ -6,14 +6,17 @@
 
     this.SetPageTitle(Model.Title);
 }
-@section head {
+@section head
+{
     <script>
         $(function () { Status.Exceptions.init({ log: '@log', id: '@e.GUID', enablePreviews: @(Current.Settings.Exceptions.EnablePreviews ? "true" : "false"), showingDeleted: true }); });
     </script>
 }
 <div class="top-section error-bread-top">
     <div class="error-header">
-        <a href="/exceptions">Exceptions</a> > <a href="/exceptions?log=@log.UrlEncode()">@e.ApplicationName</a> > <span class="error-title">@e.Message</span>
+        <a href="/exceptions">Exceptions</a>>
+        <a href="/exceptions?log=@log.UrlEncode()">@e.ApplicationName</a>>
+        <span class="error-title">@e.Message</span>
     </div>
 </div>
 <div class="bottom-section">

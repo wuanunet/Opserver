@@ -3,8 +3,8 @@
 @model Node
 @{
     var model = new DashboardModel
-        {
-            Nodes = Model.VMs
-        };
+    {
+        Nodes = Model.VMs
+    };
 }
 @Html.Partial("~/Views/Dashboard/Dashboard.Table.cshtml", model)

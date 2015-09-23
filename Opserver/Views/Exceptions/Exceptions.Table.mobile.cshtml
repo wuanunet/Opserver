@@ -5,13 +5,14 @@
     var showActions = Current.User.IsExceptionAdmin;
 }
 @functions {
-    public IHtmlString ErrorStyle(StackExchange.Exceptional.Error e){
+    public IHtmlString ErrorStyle(StackExchange.Exceptional.Error e)
+    {
         var uncapped = Math.Sqrt(e.DuplicateCount ?? 1) / Math.Pow(((DateTime.UtcNow - e.CreationDate).TotalHours + 1), 2);
         var color = Color.FromArgb((int)(255 * Math.Min(1, uncapped)), 0, 0);
         return ("color:" + ColorTranslator.ToHtml(color) + ";").AsHtml();
     }
 }
-    <table class="exceptions-dashboard striped-dashboard" data-total-count="@Model.TotalCount" data-title="@Model.Title">
+<table class="exceptions-dashboard striped-dashboard" data-total-count="@Model.TotalCount" data-title="@Model.Title">
     <thead>
         <tr class="category-row">
             <th colspan="9">

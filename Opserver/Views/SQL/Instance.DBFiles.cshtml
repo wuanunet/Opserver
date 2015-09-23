@@ -11,16 +11,16 @@
 }
 @helper ShortenPath(string path)
 {
-    var match = CommonPathMatcher.Match(path);
-    if (match.Success)
-    {
-        var shortVersion = CommonPathMatcher.Replace(path, @"C:\Program...MSSQLSERVER\MSSQL\DATA");
+var match = CommonPathMatcher.Match(path);
+if (match.Success)
+{
+    var shortVersion = CommonPathMatcher.Replace(path, @"C:\Program...MSSQLSERVER\MSSQL\DATA");
         <span title="@path">@shortVersion</span>
-    }
-    else
-    {
+}
+else
+{
         @path
-    }
+}
 }
 @if (files.Any())
 {
@@ -61,10 +61,12 @@
                             <td>@f.FileType.GetDescription()</td>
                             <td title="Virtual Name: @f.FileName">@ShortenPath(f.PhysicalName)</td>
                             <td data-val="@f.FileSizeBytes">@f.FileSizeBytes.ToHumanReadableSize()</td>
-                            <td title="Reads: @f.NumReads.ToComma()
-Stalled: @f.StallReadMs.ToComma()">@f.AvgReadStallMs</td>
-                            <td title="Writes: @f.NumWrites.ToComma()
-Stalled: @f.StallWriteMs.ToComma()">@f.AvgWriteStallMs</td>
+                            <td title="Reads: @f.NumReads.ToComma() Stalled: @f.StallReadMs.ToComma()">
+                                @f.AvgReadStallMs
+                            </td>
+                            <td title="Writes: @f.NumWrites.ToComma() Stalled: @f.StallWriteMs.ToComma()">
+                                @f.AvgWriteStallMs
+                            </td>
                         </tr>
                     }
                 </tbody>

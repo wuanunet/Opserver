@@ -18,10 +18,13 @@
                 @connections.ErrorMessage
                 @Helpers.PollNow(i, i.Connections)
             </div>
-        } else {
+        }
+        else
+        {
             <div class="sql-server">
-                <h3 class="page-header">@connections.Data.Count.Pluralize("Current active connection") on @i.Name:
-                    
+                <h3 class="page-header">
+                    @connections.Data.Count.Pluralize("Current active connection") on @i.Name:
+
                     <a href="?node=@i.Name.UrlEncode()&refresh=true" class="reload-link">Refresh</a>
                 </h3>
                 <table class="striped-dashboard" id="connections-table">
@@ -72,7 +75,7 @@
                 </table>
             </div>
             <script>
-                $(function() {
+                $(function () {
                     //$('#connections-table').tablesorter({
                     //    headers: {
                     //        1: { sorter: 'cellText' },

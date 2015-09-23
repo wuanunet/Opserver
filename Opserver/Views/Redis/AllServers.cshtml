@@ -1,35 +1,46 @@
 ﻿@using StackExchange.Opserver.Data.Redis
 @using StackExchange.Opserver.Views.Redis
 @model DashboardModel
-@helper ServerRole (RedisInfo.RedisInstanceRole role) {
-    switch (role)
-    {
-        case RedisInfo.RedisInstanceRole.Master:
+@helper ServerRole(RedisInfo.RedisInstanceRole role)
+{
+switch (role)
+{
+    case RedisInfo.RedisInstanceRole.Master:
             <span class="status-up bold">Master</span>
-            break;
-        case RedisInfo.RedisInstanceRole.Slave:
+        break;
+    case RedisInfo.RedisInstanceRole.Slave:
             <span>Slave</span>
-            break;
-        default:
+        break;
+    default:
             <span class="note">Unknown</span>
-            break;
-    }
+        break;
+}
 }
 @helper CommonVersionHeader()
 {
-    if (Model.AllVersionsMatch)
-    {
+if (Model.AllVersionsMatch)
+{
         @:- Version @Model.CommonVersion
     }
 }
-@helper ServerRow (RedisInstance server, int nest = 0, long? toSync = null, string prevMaster = null) {
-    var info = server.Info.SafeData();
-    var clients = server.Clients.SafeData();
+@helper ServerRow(RedisInstance server, int nest = 0, long? toSync = null, string prevMaster = null)
+{
+var info = server.Info.SafeData();
+var clients = server.Clients.SafeData();
     <tr class="@(nest == 0 && server.Name != prevMaster ? "first-of-group " : "")@(server.SlaveCount == 0 ? "last-of-group " : "") @server.RowClass()">
         <td class="redis-connection-name">@server.ConnectionInfo.Name</td>
-        <td style="padding-left: @(20 * nest)px">@server.IconSpan() <a href="/redis/instance?node=@server.Host:@server.Port" class="node-name-link">@server.Host</a> <span class="note">(@server.Port@if (toSync > 0)
-{<span title="@toSync.Value.Pluralize("byte") behind master"> - @(toSync.Value.ToSize())</span>})</span>            
+        <td style="padding-left: @(20 * nest)px">
+            @server.IconSpan()
+            <a href="/redis/instance?node=@server.Host:@server.Port" class="node-name-link">@server.Host</a>
+            <span class="note">
+                (@server.Port
+                @if (toSync > 0)
+                {
+                    <span title="@toSync.Value.Pluralize("byte") behind master"> - @(toSync.Value.ToSize())</span>
+                })
+            </span>
         </td>
+
         <td>
             @if (Current.User.IsExceptionAdmin)
             {
@@ -45,15 +56,20 @@
 foreach (var s in server.SlaveConnections) {
   @:@s.IP:@s.Port (@AppCache.GetHostName(s.IP)) - @s.Status - Offset: @s.Offset.ToComma()
 }
-}">@server.SlaveCount @if(server.TotalSlaveCount > server.SlaveCount){<text> <span class="note">(@(server.TotalSlaveCount - server.SlaveCount))</span></text>}</td>
+}">
+            @server.SlaveCount @if (server.TotalSlaveCount > server.SlaveCount)
+            {<text> <span class="note">(@(server.TotalSlaveCount - server.SlaveCount))</span></text>}
+        </td>
         @if (info != null)
         {
             var stats = info.Stats;
             <td title="Operations
 @stats.TotalCommandsProcessed.Pluralize("command") total
-@stats.InstantaneousOpsPerSec.Pluralize("operation") per second">@stats.TotalCommandsProcessed.ToComma() <span class="note">(@stats.InstantaneousOpsPerSec.ToComma())</span></td>
+@stats.InstantaneousOpsPerSec.Pluralize("operation") per second">
+                @stats.TotalCommandsProcessed.ToComma() <span class="note">(@stats.InstantaneousOpsPerSec.ToComma())</span>
+            </td>
             <td>@info.Memory.UsedMemoryRSS.ToHumanReadableSize() <span class="note">(@info.Memory.UsedMemory.ToHumanReadableSize())</span></td>
-            <td title="@info.Clients.Connected.Pluralize("client") connected 
+            <td title="@info.Clients.Connected.Pluralize("client") connected
 @if (clients != null)
 {
     try
@@ -67,9 +83,11 @@ foreach (var s in server.SlaveConnections) {
     }
     }
     catch
-    { }                                                                      
-}">@info.Clients.Connected</td>
-        } 
+    { }
+}">
+                @info.Clients.Connected
+            </td>
+        }
         else
         {
             <td colspan="4" class="spark-no-data">No data available</td>
@@ -80,20 +98,22 @@ foreach (var s in server.SlaveConnections) {
         }
         <td>@server.Info.ToPollSpan()</td>
     </tr>
-    if (server.SlaveCount <= 0 || server.Replication == null) { return; }
-    foreach (var s in server.SlaveInstances)
-    {
-        if (s == null || s.Replication == null) { continue; }
-        @ServerRow(s, nest + 1, s.IsSlaving ? s.Replication.MastSyncLeftBytes : (s.Replication.SlaveReplicationOffset == 1 ? 0 : server.Replication.MasterReplicationOffset - s.Replication.SlaveReplicationOffset))
-    }
+if (server.SlaveCount <= 0 || server.Replication == null) { return; }
+foreach (var s in server.SlaveInstances)
+{
+    if (s == null || s.Replication == null) { continue; }
+    @ServerRow(s, nest + 1, s.IsSlaving ? s.Replication.MastSyncLeftBytes : (s.Replication.SlaveReplicationOffset == 1 ? 0 : server.Replication.MasterReplicationOffset - s.Replication.SlaveReplicationOffset))
+}
 }
 <style>
     .first-of-group:first-of-type td {
         border-top: solid 1px transparent;
     }
+
     .first-of-group td {
         border-top: solid 1px #CCC;
     }
+
     .node-group td {
         padding-left: 4px;
         padding-right: 4px;
@@ -127,7 +147,9 @@ foreach (var s in server.SlaveConnections) {
                         <th>Master Status</th>
                         <th>Link Status</th>
                         <th>Bytes Left</th>
-                        @if(!Model.AllVersionsMatch) {<th>Version</th>}
+                        @if (!Model.AllVersionsMatch)
+                        {
+                            <th>Version</th>}
                         <th>As of</th>
                     </tr>
                 </thead>
@@ -252,7 +274,7 @@ foreach (var s in server.SlaveConnections) {
                     }
                 </tbody>
             </table>
-        }
+                        }
         @if (standAloneMasters.Any())
         {
             <table class="cluster-dashboard striped-dashboard">

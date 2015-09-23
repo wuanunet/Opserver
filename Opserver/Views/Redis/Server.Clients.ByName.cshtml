@@ -12,7 +12,11 @@
         @{ var names = clients.GroupBy(c => c.Name); }
         @foreach (var name in names.OrderByDescending(n => n.Count()).ThenBy(n => n.Key))
         {
-            <div class="info-line"><span class="label">@name.Key.IsNullOrEmptyReturn("Unknown")</span> <span class="value">@name.Count().ToComma()</span> <span class="value add-info conns">@name.Count().Pluralize("connection", includeNumber: false)</span></div>
+            <div class="info-line">
+                <span class="label">@name.Key.IsNullOrEmptyReturn("Unknown")</span>
+                <span class="value">@name.Count().ToComma()</span>
+                <span class="value add-info conns">@name.Count().Pluralize("connection", includeNumber: false)</span>
+            </div>
         }
     </div>
-}
+            }

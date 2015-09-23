@@ -3,7 +3,6 @@
 @{
     Layout = null;
     var s = Model.Instance;
- 
     var columns = s.GetColumnInfo(Model.Database);
 }
 <style>
@@ -11,29 +10,36 @@
         background-color: #3d85b0;
         padding: 0 5px;
     }
-     .table-columns p {
-         background-color: white;
-         line-height: 18px;
-         padding-left: 24px;
-         position: relative;
-     }
-    .table-columns p .data-type {
-        font-size: 12px;
-    }
+
+        .table-columns p {
+            background-color: white;
+            line-height: 18px;
+            padding-left: 24px;
+            position: relative;
+        }
+
+            .table-columns p .data-type {
+                font-size: 12px;
+            }
+
     .normal {
         color: #232323;
     }
+
     .status-pimary-key, .status-foreign-key {
         position: absolute;
         left: 10px;
         top: -1px;
     }
+
     .status-pimary-key {
         color: #fac38d !important;
     }
+
     .status-foreign-key {
         color: #bbb !important;
     }
+
     .foreign-key-info {
         position: absolute;
         left: 300px;
@@ -46,7 +52,8 @@
             <span class="error-label">There was an error fetching column info from @s.Name for @Model.Database</span>
             @columns.ErrorMessage
         </div>
-    } else
+    }
+    else
     {
         var tableColumns = columns.Data.Where(c => c.Schema + "." + c.TableName == Model.ObjectName).OrderBy(c => c.Position);
         foreach (var c in tableColumns)
@@ -76,44 +83,44 @@
         }
 
         @*<table>
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Column</th>
-                    <th>Type</th>
-                    <th>Constraint</th>
-                    <th>Constraint To</th>
-                </tr>
-            </thead>
-            <tbody class="node-group">
-                @foreach (var c in tableColumns)
-                {
-                    <tr data-id="@c.Id">
-                        <td>
-                            @if (c.PrimaryKeyConstraint.HasValue())
-                            {
-                                <span title="@c.PrimaryKeyConstraint">PK</span>
-                            }
-                            @if (c.PrimaryKeyConstraint.HasValue() && c.ForeignKeyConstraint.HasValue())
-                            {
-                                @:, 
-                            }
-                            @if (c.ForeignKeyConstraint.HasValue())
-                            {
-                                <span title="@c.ForeignKeyConstraint to @(c.ForeignKeyTargetSchema).@(c.ForeignKeyTargetTable).@(c.ForeignKeyTargetColumn)">FK</span>
-                            }
-                        </td>
-                        <td>@c.ColumnName <span class="note">(@c.DataTypeDescription)</span></td>
-                        <td>@(c.PrimaryKeyConstraint ?? c.ForeignKeyConstraint)</td>
-                        <td>
-                            @if (c.ForeignKeyConstraint.HasValue())
-                            {
-                                @:<span class="note">@c.ForeignKeyTargetSchema.</span>@(c.ForeignKeyTargetTable).@(c.ForeignKeyTargetColumn)
-                            }
-                        </td>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Constraint</th>
+                        <th>Constraint To</th>
                     </tr>
-                }
-            </tbody>
-        </table>*@
+                </thead>
+                <tbody class="node-group">
+                    @foreach (var c in tableColumns)
+                    {
+                        <tr data-id="@c.Id">
+                            <td>
+                                @if (c.PrimaryKeyConstraint.HasValue())
+                                {
+                                    <span title="@c.PrimaryKeyConstraint">PK</span>
+                                }
+                                @if (c.PrimaryKeyConstraint.HasValue() && c.ForeignKeyConstraint.HasValue())
+                                {
+                                    @:,
+                                }
+                                @if (c.ForeignKeyConstraint.HasValue())
+                                {
+                                    <span title="@c.ForeignKeyConstraint to @(c.ForeignKeyTargetSchema).@(c.ForeignKeyTargetTable).@(c.ForeignKeyTargetColumn)">FK</span>
+                                }
+                            </td>
+                            <td>@c.ColumnName <span class="note">(@c.DataTypeDescription)</span></td>
+                            <td>@(c.PrimaryKeyConstraint ?? c.ForeignKeyConstraint)</td>
+                            <td>
+                                @if (c.ForeignKeyConstraint.HasValue())
+                                {
+                                    @:<span class="note">@c.ForeignKeyTargetSchema.</span>@(c.ForeignKeyTargetTable).@(c.ForeignKeyTargetColumn)
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>*@
     }
 </div>

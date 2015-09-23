@@ -33,11 +33,11 @@
                             <td>@shards.Count().ToComma()</td>
                             @if (n.Stats != null && n.Stats.Process != null && n.Stats.Process.CPU != null)
                             {
-                            <td>@((n.Stats.OS.CPU.User + n.Stats.OS.CPU.System).ToComma())%</td>
+                                <td>@((n.Stats.OS.CPU.User + n.Stats.OS.CPU.System).ToComma())%</td>
                             }
                             else
                             {
-                            <td class="note">n/a</td>
+                                <td class="note">n/a</td>
                             }
                             @if (n.Stats != null && n.Stats.Process.Memory != null)
                             {
@@ -45,7 +45,7 @@
                             }
                             else
                             {
-                            <td class="note">n/a</td>
+                                <td class="note">n/a</td>
                             }
                             <td>@c.HealthStatus.Data.Indices.Count.ToComma()</td>
                         </tr>

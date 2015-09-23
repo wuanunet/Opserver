@@ -6,45 +6,45 @@
 }
 @helper GetOverrideAction(string incident = null, string status = null)
 {
-    if (Model.CurrentPagerDutyPerson != null&& Current.User.IsGlobalAdmin)
-    {
+if (Model.CurrentPagerDutyPerson != null && Current.User.IsGlobalAdmin)
+{
         @:<span class="top-right-info"><a href="#" class="js_override_action">Take on Call</a> (1hr)</span>
     }
 }
 
 @helper GetIncidentAction(IncidentStatus status)
 {
-    if (Model.CurrentPagerDutyPerson == null) { return; }
-    switch (status)
-    {
-        case IncidentStatus.acknowledged:
+if (Model.CurrentPagerDutyPerson == null) { return; }
+switch (status)
+{
+    case IncidentStatus.acknowledged:
             <a href="#" class="js_incident_action" data-action="@IncidentStatus.resolved">Resolve</a>
-            break;
-        default:
+        break;
+    default:
             <a href="#" class="js_incident_action" data-action="@IncidentStatus.acknowledged">Ack</a>
             <a href="#" class="js_incident_action" data-action="@IncidentStatus.resolved">Resolve</a>
-            break;
-    }
+        break;
+}
 }
 
 @section head {
     <script>
         Status.Dashboard.init({ refresh: 5 });
-        $(function() {
+        $(function () {
             $.extend(Status.ajaxLoaders, {
-                '#/pagerduty/incident/': function(val) {
+                '#/pagerduty/incident/': function (val) {
                     Status.summaryPopup('/pagerduty/incident/' + val);
                 },
-                '#/pagerduty/escalation/': function(val) {
+                '#/pagerduty/escalation/': function (val) {
                     Status.summaryPopup('/pagerduty/escalation/' + val);
                 }
             });
-            $(".js_incident_action").on('click', function(e) {
+            $(".js_incident_action").on('click', function (e) {
                 e.preventDefault();
                 $.post('/pagerduty/action/incident/updatestatus', {
                     'newStatus': $(this).data('action'),
                     'incident': $(this).closest('[data-incident]').data('incident')
-                }).done(function() {
+                }).done(function () {
                     Status.refresh.run();
                 });
             });
@@ -60,41 +60,52 @@
         .striped-dashboard {
             width: 900px;
         }
+
         .incident-details {
             min-width: 600px;
         }
-        .incident-details .key {
-            color: #888;
-        }
-        .incident-details ul li {
-            padding: 2px 4px;
-        }
-        .incident-details ul li table {
-            margin: 10px 20px 5px 20px;
-            min-width: 560px;
-        }
-        .incident-details ul li table tr th {
-            font-weight: bold;
-            border-bottom: solid 1px #EEE;
-        }
-        .incident-details ul li table tr th, .incident-details ul li table tr td {
-            padding: 2px 5px;
-        }
+
+            .incident-details .key {
+                color: #888;
+            }
+
+            .incident-details ul li {
+                padding: 2px 4px;
+            }
+
+                .incident-details ul li table {
+                    margin: 10px 20px 5px 20px;
+                    min-width: 560px;
+                }
+
+                    .incident-details ul li table tr th {
+                        font-weight: bold;
+                        border-bottom: solid 1px #EEE;
+                    }
+
+                    .incident-details ul li table tr th, .incident-details ul li table tr td {
+                        padding: 2px 5px;
+                    }
+
         .header-blurb {
             width: 900px;
             margin: 0 auto;
         }
-        .header-blurb h3 {
-            padding-top: 8px;
-            font-size: 16px;
-        }
-        .header-blurb ol {
-            padding-left: 20px;
-            margin-bottom: 0.5em;
-        }
-        .header-blurb p {
-            margin-bottom: 0.5em;
-        }
+
+            .header-blurb h3 {
+                padding-top: 8px;
+                font-size: 16px;
+            }
+
+            .header-blurb ol {
+                padding-left: 20px;
+                margin-bottom: 0.5em;
+            }
+
+            .header-blurb p {
+                margin-bottom: 0.5em;
+            }
+
         .top-right-info {
             margin-right: 0;
         }

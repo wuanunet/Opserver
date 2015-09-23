@@ -10,7 +10,8 @@
 {
     <a class="@(Model.View == view ? "selected" : "")" href="@href@(includeParams && Model.CurrentInstance != null ? "?node=" + Model.CurrentInstance.Name : "")">@name</a>
 }
-@section head {
+@section head
+{
     <script>
         $(function() {
             Status.Dashboard.init({ refresh: @(Model.Refresh) });
@@ -18,16 +19,16 @@
         });
     </script>
 }
-    <div class="tabs sub-tabs">
-        <div class="tabs-links">
-            @TabLink(SQLViews.Servers, "/sql/servers", "all servers", false)
-            @TabLink(SQLViews.Instance, "/sql/instance", "instance")
-            @TabLink(SQLViews.Top, "/sql/top", "top")
-            @TabLink(SQLViews.Active, "/sql/active", "active")
-            @TabLink(SQLViews.Connections, "/sql/connections", "connections")
-            @TabLink(SQLViews.Databases, "/sql/databases", "databases")
-        </div>
+<div class="tabs sub-tabs">
+    <div class="tabs-links">
+        @TabLink(SQLViews.Servers, "/sql/servers", "all servers", false)
+        @TabLink(SQLViews.Instance, "/sql/instance", "instance")
+        @TabLink(SQLViews.Top, "/sql/top", "top")
+        @TabLink(SQLViews.Active, "/sql/active", "active")
+        @TabLink(SQLViews.Connections, "/sql/connections", "connections")
+        @TabLink(SQLViews.Databases, "/sql/databases", "databases")
     </div>
+</div>
 <div class="dashboard-list">
     @if (Model.View != SQLViews.Servers && Model.CurrentInstance == null)
     {

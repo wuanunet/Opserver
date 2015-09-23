@@ -13,7 +13,9 @@
             <span class="error-label">There was an error fetching table info from status from @s.Name for @Model.Database</span>
             @tables.ErrorMessage
         </div>
-    } else {
+    }
+    else
+    {
         <div>
             <table class="cluster-dashboard striped-dashboard" id="database-table">
                 <thead>
@@ -31,7 +33,8 @@
                     {
                         <tr data-id="@t.Id" data-table="@(t.SchemaName).@(t.TableName)" title="@(t.SchemaName).@(t.TableName) created @t.CreationDate">
                             <td>
-                                <span class="note">@(t.SchemaName).</span><span>@t.TableName</span>
+                                <span class="note">@(t.SchemaName).</span>
+                                <span>@t.TableName</span>
                                 @if (t.TableType == TableTypes.Heap)
                                 {
                                     <span class="note"> (Heap)</span>
@@ -75,7 +78,7 @@
             </table>
             <script>
                 $(function () {
-                    $('#database-table').on('click', 'tr', function() {
+                    $('#database-table').on('click', 'tr', function () {
                         var tableName = $(this).data('table');
                         if (tableName) {
                             window.location = '#/db/@(Model.Database)/tables/' + tableName;

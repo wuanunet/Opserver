@@ -25,23 +25,37 @@
             var ks = s as RedisInfo.KeyspaceInfo;
             if (ks != null)
             {
-<div class="info-title">@s.Name <span class="count">(@s.Lines.Count)</span></div>
-<div class="info-section collapsed">
-    @foreach (var l in ks.KeyData)
-    {
-<div class="info-line"><span class="label">DB @l.Key</span>: <span class="value">@l.Value.Keys.ToComma()</span> <span class="note">keys</span> <span class="value">@l.Value.Expires.ToComma()</span> <span class="note">exp</span>@if(Current.User.IsInRole(Roles.RedisAdmin)){ <span class="note">(<a href="/redis/analyze/memory?node=@info.Host:@info.Port&db=@l.Key" class="node-name-link">analyze</a>)</span>}</div>
-    }
-</div>
-            } 
-            else 
+                <div class="info-title">@s.Name <span class="count">(@s.Lines.Count)</span></div>
+                <div class="info-section collapsed">
+                    @foreach (var l in ks.KeyData)
+                    {
+                        <div class="info-line">
+                            <span class="label">DB @l.Key</span>:
+                            <span class="value">@l.Value.Keys.ToComma()</span>
+                            <span class="note">keys</span>
+                            <span class="value">@l.Value.Expires.ToComma()</span>
+                            <span class="note">exp</span>
+                            @if (Current.User.IsInRole(Roles.RedisAdmin))
+                            {
+                                <span class="note">(<a href="/redis/analyze/memory?node=@info.Host:@info.Port&db=@l.Key" class="node-name-link">analyze</a>)</span>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            else
             {
-<div class="info-title">@s.Name</div>
-<div class="info-section">
-    @foreach (var l in s.Lines)
-    {
-<div class="info-line@(l.Important ? " important" : "")"><span class="label">@l.Key</span>: <span class="value">@l.ParsedValue</span></div>
-    }
-</div>}
+                <div class="info-title">@s.Name</div>
+                <div class="info-section">
+                    @foreach (var l in s.Lines)
+                    {
+                        <div class="info-line@(l.Important ? " important" : "")">
+                            <span class="label">@l.Key</span>:
+                            <span class="value">@l.ParsedValue</span>
+                        </div>
+                    }
+                </div>
+            }
 
         }
     }

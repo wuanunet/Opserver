@@ -25,19 +25,19 @@
             {
                 <div>
                     @gr.GetWorstStatus().IconSpan() @gr.Key:
-                    @string.Join(", ", 
+                    @string.Join(", ",
                         gr.Select(p =>
-                            {
-                                var down = p.Servers.Where(s => s.ProxyServerStatus.IsBad());
-                                var summary = p.Instance.Name + ": " + p.Servers.Count;
-                                return down.Any()
-                                           ? summary + ", " + MonitorStatus.Critical.Span(down.Count().ToComma() + " down")
-                                           : summary;
-                            })).AsHtml()
+                        {
+                            var down = p.Servers.Where(s => s.ProxyServerStatus.IsBad());
+                            var summary = p.Instance.Name + ": " + p.Servers.Count;
+                            return down.Any()
+                                       ? summary + ", " + MonitorStatus.Critical.Span(down.Count().ToComma() + " down")
+                                       : summary;
+                        })).AsHtml()
                 </div>
             }
         }
-        else if(!downInstances.Any())
+        else if (!downInstances.Any())
         {
             <div class="no-content">No proxies found</div>
         }

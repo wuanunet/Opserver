@@ -30,46 +30,46 @@
             {
                 <table>
                     <thead>
-                    <tr>
-                        <th colspan="2">Summary</th>
-                    </tr>
+                        <tr>
+                            <th colspan="2">Summary</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    @foreach (var s in i.SummaryData)
-                    {
-                        <tr>
-                            <td class="bold">@s.Key</td>
-                            <td>@s.Value</td>
-                        </tr>
-                    }
+                        @foreach (var s in i.SummaryData)
+                        {
+                            <tr>
+                                <td class="bold">@s.Key</td>
+                                <td>@s.Value</td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             }
         </li>
     </ul>
-    <hr/>
+    <hr />
     <table class="striped-dashboard">
         <tbody class="node-header">
-        <tr class="category-row">
-            <th colspan="8">
-                <h3>Incident Log</h3>
-            </th>
-        </tr>
-        <tr>
-            <th>Time</th>
-            <th>Type</th>
-            <th>Message</th>
-            <th>Notes</th>
-        </tr>
-        @foreach (var l in Model.Logs)
-        {
-            <tr>
-                <td>@l.CreationTime.ToRelativeTimeSpan()</td>
-                <td>@l.LogType.ToTitleCase()</td>
-                <td>@l.Detail.Message</td>
-                <td>@l.Note</td>
+            <tr class="category-row">
+                <th colspan="8">
+                    <h3>Incident Log</h3>
+                </th>
             </tr>
-        }
+            <tr>
+                <th>Time</th>
+                <th>Type</th>
+                <th>Message</th>
+                <th>Notes</th>
+            </tr>
+            @foreach (var l in Model.Logs)
+            {
+                <tr>
+                    <td>@l.CreationTime.ToRelativeTimeSpan()</td>
+                    <td>@l.LogType.ToTitleCase()</td>
+                    <td>@l.Detail.Message</td>
+                    <td>@l.Note</td>
+                </tr>
+            }
         </tbody>
     </table>
 </div>

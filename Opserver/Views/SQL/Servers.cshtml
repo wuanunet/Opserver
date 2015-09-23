@@ -5,31 +5,37 @@
 @{
     var standalone = Model.StandaloneInstances;
 }
-@helper MemoryCell(SQLInstance i) {
-    if (i.ServerInfo != null)
-    {
+@helper MemoryCell(SQLInstance i)
+{
+if (i.ServerInfo != null)
+{
         <td>@(i.ServerInfo?.MemoryPercentStatusSpan())</td>
+}
+else
+{
+    var props = i.ServerProperties.SafeData();
+    if (props != null && props.PhysicalMemoryBytes > 0)
+    {
+            <td title="@props.CommittedBytes.ToSize() / @props.PhysicalMemoryBytes.ToSize()">@(decimal.Round(i.CurrentMemoryPercent.Value, 2) + "%")</td>
     }
     else
     {
-        var props = i.ServerProperties.SafeData();
-        if (props != null && props.PhysicalMemoryBytes > 0)
-        {
-            <td title="@props.CommittedBytes.ToSize() / @props.PhysicalMemoryBytes.ToSize()">@(decimal.Round(i.CurrentMemoryPercent.Value, 2) + "%")</td>
-        }
-        else
-        {
             <td class="note">?</td>
-        }
     }
 }
-@helper ConnectionsCell(SQLInstance i) {
-    var props = i.ServerProperties.SafeData(true);
-    <td><a href="/sql/connections?node=@i.Name.UrlEncode()">@props.ConnectionCount.ToComma()</a> <span class="note">/ @props.SessionCount.ToComma()</span></td>
 }
-@helper BatchesCell(SQLInstance i) {
-    var batches = i.GetPerfCounter("SQL Statistics", "Batch Requests/sec", "");
-    <td>@(batches != null ? ((long) batches.CalculatedValue).ToComma() : "")</td>
+@helper ConnectionsCell(SQLInstance i)
+{
+var props = i.ServerProperties.SafeData(true);
+    <td>
+        <a href="/sql/connections?node=@i.Name.UrlEncode()">@props.ConnectionCount.ToComma()</a>
+        <span class="note">/ @props.SessionCount.ToComma()</span>
+    </td>
+}
+@helper BatchesCell(SQLInstance i)
+{
+var batches = i.GetPerfCounter("SQL Statistics", "Batch Requests/sec", "");
+    <td>@(batches != null ? ((long)batches.CalculatedValue).ToComma() : "")</td>
 }
 @if (Model.Clusters.Any())
 {
@@ -38,7 +44,12 @@
         {
             <tbody class="node-header" data-name="header-@c.Name">
                 <tr class="category-row">
-                    <th colspan="12"><h3><a href="~/sql/servers#/cluster/@c.Name" class="node-name-link" data-refresh="5">@c.IconSpan() @c.Name</a> <span class="quorum-info">(@c.QuorumType.GetDescription() - @c.QuorumState.GetDescription())</span></h3></th>
+                    <th colspan="12">
+                        <h3>
+                            <a href="~/sql/servers#/cluster/@c.Name" class="node-name-link" data-refresh="5">@c.IconSpan() @c.Name</a>
+                            <span class="quorum-info">(@c.QuorumType.GetDescription() - @c.QuorumState.GetDescription())</span>
+                        </h3>
+                    </th>
                 </tr>
                 <tr>
                     <th></th>
@@ -84,7 +95,9 @@
     <table class="cluster-dashboard striped-dashboard">
         <tbody class="node-header" data-name="header-standalone">
             <tr class="category-row">
-                <th colspan="11"><h3>@standalone.GetWorstStatus().IconSpan() @standalone.Count.ToComma() Standalone</h3></th>
+                <th colspan="11">
+                    <h3>@standalone.GetWorstStatus().IconSpan() @standalone.Count.ToComma() Standalone</h3>
+                </th>
             </tr>
             <tr>
                 <th></th>
@@ -135,7 +148,7 @@
     </div>
 </div>
 
-@if(Model.CurrentCluster != null)
+@if (Model.CurrentCluster != null)
 {
     <div class="summary-popup">
         @Html.Partial("Servers.ClusterDetail", Model)

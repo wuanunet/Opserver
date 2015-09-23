@@ -45,20 +45,23 @@
     }
 }
 <div class="issues-list" data-issue-count="@issues.Count">
-@if (issues.Any())
-{
-    <a href="javascript:void(0)" class="issues-button">@issues.GetWorstStatus().IconSpan() @issues.Count.Pluralize("Issue") <span class="down-arrow">▼</span></a>
-    <div class="issues-dropdown">
-        @foreach (var i in issues)
-        {
-            <a class="issue-item" href="@GetLink(i)">
-                <span class="@i.MonitorStatus.Class()">@i.IconSpan() @i.Title</span>
-                @if (i.Description.HasValue())
-                {
-                    <div class="note" title="@i.Description">@i.Description.Truncate(100)</div>
-                }
-            </a>
-        }
-    </div>
-}
+    @if (issues.Any())
+    {
+        <a href="javascript:void(0)" class="issues-button">
+            @issues.GetWorstStatus().IconSpan() @issues.Count.Pluralize("Issue")
+            <span class="down-arrow">▼</span>
+        </a>
+        <div class="issues-dropdown">
+            @foreach (var i in issues)
+            {
+                <a class="issue-item" href="@GetLink(i)">
+                    <span class="@i.MonitorStatus.Class()">@i.IconSpan() @i.Title</span>
+                    @if (i.Description.HasValue())
+                    {
+                        <div class="note" title="@i.Description">@i.Description.Truncate(100)</div>
+                    }
+                </a>
+            }
+        </div>
+    }
 </div>

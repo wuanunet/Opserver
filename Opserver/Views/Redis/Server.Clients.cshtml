@@ -9,15 +9,15 @@
 {
     if (cache.ErrorMessage.HasValue())
     {
-    <div class="redis-info">
-        <div class="last-success-notice">@cache.ErrorMessage</div>
-    </div>
+        <div class="redis-info">
+            <div class="last-success-notice">@cache.ErrorMessage</div>
+        </div>
     }
     if (cache.LastPoll > cache.LastSuccess)
     {
-    <div class="redis-info">
-        <div class="last-success-notice">Query failed, showing info from: @cache.LastSuccess.ToRelativeTimeSpanMini()</div>
-    </div>
+        <div class="redis-info">
+            <div class="last-success-notice">Query failed, showing info from: @cache.LastSuccess.ToRelativeTimeSpanMini()</div>
+        </div>
     }
 }
 @if (cache.Data != null)
@@ -35,7 +35,8 @@
             foreach (var ci in cache.Data.OrderByDescending(c => c.Flags).ThenBy(c => c.Host).ThenBy(c => c.AgeSeconds))
             {
                 var subCount = ci.SubscriptionCount + ci.PatternSubscriptionCount;
-                <div class="info-line" title="@(ci.LastCommand), DB @(ci.Database)"><span class="label">@ci.Address</span> <span class="value">@(string.IsNullOrEmpty(ci.Name) ? "" : ci.Name) @(ci.Flags != ClientFlags.None ? ci.Flags.ToString() : "")</span>
+                <div class="info-line" title="@(ci.LastCommand), DB @(ci.Database)">
+                    <span class="label">@ci.Address</span> <span class="value">@(string.IsNullOrEmpty(ci.Name) ? "" : ci.Name) @(ci.Flags != ClientFlags.None ? ci.Flags.ToString() : "")</span>
                     @{
                         var idle = DateTime.UtcNow.AddSeconds(-ci.IdleSeconds);
                         <span class="value add-info idle">(@idle.ToRelativeTimeMini(includeTimeForOldDates: false, includeAgo: false))</span>
@@ -45,7 +46,7 @@
                         <span class="value add-info subs">(@subCount.ToComma() @("sub".Pluralize(subCount)))</span>
                     }
                 </div>
-            }
-        }
+                            }
+                        }
     </div>
-}
+                        }

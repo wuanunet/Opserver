@@ -4,20 +4,21 @@
     Layout = "~/Views/Shared/Master.cshtml";
     var serverInfo = RedisInstance.GetInstance(Model.ConnectionInfo);
 }
-@helper TopKeys(KeyStats ks) {
-    foreach (var tk in ks.TopKeys)
-    {
-@:@tk.Value (@tk.Key.ToComma() bytes)
+@helper TopKeys(KeyStats ks)
+{
+foreach (var tk in ks.TopKeys)
+{
+        @:@tk.Value (@tk.Key.ToComma() bytes)
     }
 }
 @helper RenderSlaves(RedisInstance serverInfo, int nest = 0)
 {
-    if (serverInfo.SlaveCount <= 0) { return; }
-    foreach (var ci in serverInfo.SlaveInstances)
-    {
+if (serverInfo.SlaveCount <= 0) { return; }
+foreach (var ci in serverInfo.SlaveInstances)
+{
         <li style="padding-left: @(nest * 20)px">@ci.IconSpan() <a href="/redis/analyze/memory?node=@ci.Host:@ci.Port&db=@Model.Database" class="node-name-link">@ci.Host</a> <span class="note">(@ci.Port)</span></li>
         @RenderSlaves(ci, ++nest)
-    }
+}
 }
 @functions {
 }
@@ -95,35 +96,35 @@
             </tr>
         </tfoot>
     </table>
-@if (Model.TopKeys.Any())
-{
-    <table class="cluster-dashboard striped-dashboard">
-        <thead class="node-header" data-name="header-missing">
-            <tr class="category-row">
-                <th colspan="5">
-                    <div>Top Keys (by Size) for @Model.ConnectionInfo.Name</div>
-                </th>
-            </tr>
-            <tr>
-                <th>Category</th>
-                <th>Key</th>
-                <th>Bytes (Key)</th>
-                <th>Bytes (Value)</th>
-                <th>Bytes (Total)</th>
-            </tr>
-        </thead>
-        <tbody class="node-group" data-name="body-missing">
-            @foreach (var tk in Model.TopKeys)
-            {
-                <tr>
-                    <td>@tk.Matcher.Name</td>
-                    <td>@tk.Name</td>
-                    <td>@tk.KeyBytes.ToComma()</td>
-                    <td>@tk.ValueBytes.ToComma()</td>
-                    <td>@tk.TotalBytes.ToComma()</td>
+    @if (Model.TopKeys.Any())
+    {
+        <table class="cluster-dashboard striped-dashboard">
+            <thead class="node-header" data-name="header-missing">
+                <tr class="category-row">
+                    <th colspan="5">
+                        <div>Top Keys (by Size) for @Model.ConnectionInfo.Name</div>
+                    </th>
                 </tr>
-            }
-        </tbody>
-    </table>
-}
+                <tr>
+                    <th>Category</th>
+                    <th>Key</th>
+                    <th>Bytes (Key)</th>
+                    <th>Bytes (Value)</th>
+                    <th>Bytes (Total)</th>
+                </tr>
+            </thead>
+            <tbody class="node-group" data-name="body-missing">
+                @foreach (var tk in Model.TopKeys)
+                {
+                    <tr>
+                        <td>@tk.Matcher.Name</td>
+                        <td>@tk.Name</td>
+                        <td>@tk.KeyBytes.ToComma()</td>
+                        <td>@tk.ValueBytes.ToComma()</td>
+                        <td>@tk.TotalBytes.ToComma()</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 </div>
